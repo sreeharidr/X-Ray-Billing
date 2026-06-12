@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KRC X-ray Billing</title>
+<style>
+  :root{
+    --navy:#16263d; --navy-2:#22395c; --teal:#0e8a83; --teal-soft:#e3f2f1;
+    --paper:#f7f5f0; --card:#ffffff; --ink:#1c2430; --muted:#68707d;
+    --line:#e2ddd3; --amber:#b97e12; --red:#b3402f; --green:#2e7d4f;
+    --radius:10px; --shadow:0 1px 3px rgba(22,38,61,.08), 0 4px 14px rgba(22,38,61,.06);
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif; background:var(--paper); color:var(--ink); font-size:15px; line-height:1.45}
+
+  header.app{background:var(--navy); color:#fff; padding:14px 22px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px}
+  header.app h1{font-size:1.15rem; font-weight:600; letter-spacing:.3px}
+  header.app h1 span{color:#7fd1cb; font-weight:400}
+  header.app .clinic-sub{font-size:.78rem; color:#b9c4d4; margin-top:2px}
+  .hdr-actions{display:flex; gap:8px}
+
+  main{max-width:1100px; margin:22px auto; padding:0 16px; display:grid; grid-template-columns:430px 1fr; gap:20px; align-items:start}
+  @media(max-width:920px){ main{grid-template-columns:1fr} }
+
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow)}
+  .card h2{font-size:.8rem; text-transform:uppercase; letter-spacing:.09em; color:var(--muted); padding:14px 18px 0}
+  .card .body{padding:14px 18px 18px}
+
+  label{display:block; font-size:.78rem; font-weight:600; color:var(--navy-2); margin:10px 0 4px}
+  input,select{width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:7px; font-size:.95rem; background:#fff; color:var(--ink)}
+  input:focus,select:focus{outline:2px solid var(--teal); outline-offset:1px; border-color:var(--teal)}
+  input[readonly]{background:var(--teal-soft); border-color:transparent; font-weight:600; color:var(--navy)}
+  .row{display:flex; gap:10px}
+  .row > div{flex:1}
+  .row .narrow{flex:0 0 90px}
+
+  .btn{display:inline-block; border:none; border-radius:7px; padding:9px 16px; font-size:.9rem; font-weight:600; cursor:pointer; transition:filter .15s}
+  .btn:hover{filter:brightness(1.08)}
+  .btn-primary{background:var(--teal); color:#fff; width:100%; margin-top:16px; padding:12px; font-size:1rem}
+  .btn-ghost{background:transparent; color:#d6e4ff; border:1px solid #4a5f82; font-weight:500; padding:7px 13px; font-size:.82rem}
+  .btn-small{padding:5px 10px; font-size:.78rem; background:var(--navy-2); color:#fff}
+  .btn-outline{background:#fff; border:1px solid var(--line); color:var(--navy-2)}
+  .btn-danger{background:#fff; border:1px solid #e3b9b1; color:var(--red)}
+
+  .final-strip{margin-top:14px; background:var(--navy); color:#fff; border-radius:8px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center}
+  .final-strip .label{font-size:.75rem; text-transform:uppercase; letter-spacing:.08em; color:#9fb2cc}
+  .final-strip .value{font-size:1.5rem; font-weight:700; color:#7fd1cb}
+
+  /* Records */
+  .records-toolbar{display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:14px 18px 4px}
+  .records-toolbar select{width:auto}
+  .records-toolbar .spacer{flex:1}
+  table{width:100%; border-collapse:collapse; font-size:.85rem}
+  th{font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); text-align:left; padding:8px 10px; border-bottom:2px solid var(--line)}
+  td{padding:8px 10px; border-bottom:1px solid #efece5; vertical-align:top}
+  td.num,th.num{text-align:right}
+  tr:hover td{background:#fbfaf7}
+  .pill{display:inline-block; font-size:.68rem; font-weight:700; padding:2px 8px; border-radius:99px}
+  .pill.ok{background:#e4f3ea; color:var(--green)}
+  .pill.pending{background:#fdf3e0; color:var(--amber)}
+  .pill.local{background:#eef1f5; color:var(--muted)}
+  .summary{display:flex; gap:18px; padding:12px 18px; border-top:1px solid var(--line); font-size:.85rem; flex-wrap:wrap}
+  .summary b{color:var(--navy)}
+  .empty{padding:34px; text-align:center; color:var(--muted); font-size:.9rem}
+  .icon-btn{background:none; border:none; cursor:pointer; font-size:.95rem; padding:2px 4px}
+
+  /* Modal */
+  .modal-bg{position:fixed; inset:0; background:rgba(22,38,61,.45); display:none; align-items:flex-start; justify-content:center; padding:30px 14px; overflow:auto; z-index:50}
+  .modal-bg.open{display:flex}
+  .modal{background:#fff; border-radius:12px; max-width:560px; width:100%; padding:22px; box-shadow:0 20px 60px rgba(0,0,0,.25)}
+  .modal h3{color:var(--navy); margin-bottom:4px}
+  .modal .hint{font-size:.8rem; color:var(--muted); margin-bottom:12px}
+  .list-edit{border:1px solid var(--line); border-radius:8px; max-height:220px; overflow:auto; margin:8px 0}
+  .list-edit .li{display:flex; align-items:center; gap:8px; padding:7px 10px; border-bottom:1px solid #f0ede6; font-size:.88rem}
+  .list-edit .li:last-child{border-bottom:none}
+  .list-edit .li .nm{flex:1}
+  .list-edit .li .pr{font-weight:600; color:var(--navy-2)}
+  .add-line{display:flex; gap:8px; margin-top:6px}
+  .add-line input{flex:1}
+  .add-line input.price{flex:0 0 110px}
+  .settings-section{margin-top:18px; padding-top:14px; border-top:1px dashed var(--line)}
+  .settings-section h4{font-size:.8rem; text-transform:uppercase; letter-spacing:.07em; color:var(--teal); margin-bottom:6px}
+  .toast{position:fixed; bottom:22px; left:50%; transform:translateX(-50%); background:var(--navy); color:#fff; padding:11px 20px; border-radius:8px; font-size:.88rem; box-shadow:var(--shadow); opacity:0; transition:opacity .25s; pointer-events:none; z-index:99}
+  .toast.show{opacity:1}
+
+  /* ====== RECEIPT (print) ====== */
+  #receiptWrap{display:none}
+  @media print{
+    body > *:not(#receiptWrap){display:none !important}
+    #receiptWrap{display:block !important}
+    body{background:#fff}
+  }
+  .receipt{width:148mm; min-height:100mm; margin:0 auto; padding:10mm 12mm; font-family:Georgia,"Times New Roman",serif; color:#111; border:1px solid #999}
+  .receipt .r-head{text-align:center; border-bottom:2.5px solid #16263d; padding-bottom:6px}
+  .receipt .r-head h2{font-size:17pt; color:#16263d; letter-spacing:.4px}
+  .receipt .r-head .r-sub{font-size:8.5pt; color:#333; margin-top:2px}
+  .receipt .r-meta{display:flex; justify-content:space-between; font-size:9.5pt; margin:8px 0 4px}
+  .receipt .r-title{text-align:center; font-size:9pt; letter-spacing:.25em; text-transform:uppercase; color:#0e8a83; margin:6px 0}
+  .receipt table{width:100%; border-collapse:collapse; font-size:10pt; margin-top:4px}
+  .receipt td,.receipt th{padding:5px 6px; font-family:inherit}
+  .receipt th{border-bottom:1px solid #555; font-size:8.5pt; letter-spacing:.05em; text-transform:uppercase; text-align:left}
+  .receipt .amt{text-align:right}
+  .receipt .total-row td{border-top:1.5px solid #16263d; font-weight:bold; font-size:11pt}
+  .receipt .r-foot{display:flex; justify-content:space-between; align-items:flex-end; margin-top:14mm; font-size:9pt}
+  .receipt .sig{border-top:1px solid #444; padding-top:3px; width:48mm; text-align:center}
+</style>
+</head>
+<body>
+
+<header class="app">
+  <div>
+    <h1 id="hClinicName">Kurnool Rheumatology Center <span>· X-ray Billing</span></h1>
+    <div class="clinic-sub" id="hClinicSub">87/654, Opposite Amma Hospital, Madhava Nagar, Kurnool · 8333837666</div>
+  </div>
+  <div class="hdr-actions">
+    <button class="btn btn-ghost" onclick="syncAllPending()">⇪ Sync pending</button>
+    <button class="btn btn-ghost" onclick="openSettings()">⚙ Settings</button>
+  </div>
+</header>
+
+<main>
+  <!-- ===== NEW INVOICE ===== -->
+  <div class="card">
+    <h2>New Invoice</h2>
+    <div class="body">
+      <div class="row">
+        <div><label for="fDate">Date</label><input type="date" id="fDate"></div>
+        <div><label>Invoice No.</label><input id="fInvoice" readonly></div>
+      </div>
+
+      <label for="fName">Patient name</label>
+      <input id="fName" autocomplete="off" placeholder="Full name">
+
+      <div class="row">
+        <div class="narrow"><label for="fAge">Age</label><input id="fAge" type="number" min="0" max="120"></div>
+        <div class="narrow"><label for="fSex">Sex</label>
+          <select id="fSex"><option value="F">F</option><option value="M">M</option><option value="Other">Other</option></select>
+        </div>
+        <div><label for="fDoctor">Referred by</label>
+          <select id="fDoctor"></select>
+        </div>
+      </div>
+
+      <label for="fXray">X-ray</label>
+      <select id="fXray" onchange="onXrayChange()"></select>
+
+      <div class="row">
+        <div><label for="fAmount">Amount (₹)</label><input id="fAmount" type="number" min="0" oninput="recalc()"></div>
+        <div><label for="fDiscount">Discount (₹)</label><input id="fDiscount" type="number" min="0" value="0" oninput="recalc()"></div>
+        <div><label for="fMode">Payment</label>
+          <select id="fMode"><option>Cash</option><option>UPI</option><option>Card</option></select>
+        </div>
+      </div>
+
+      <div class="final-strip">
+        <span class="label">Final amount</span>
+        <span class="value" id="fFinal">₹ 0</span>
+      </div>
+
+      <button class="btn btn-primary" onclick="saveInvoice()">Save &amp; print receipt</button>
+    </div>
+  </div>
+
+  <!-- ===== RECORDS ===== -->
+  <div class="card">
+    <h2>Records</h2>
+    <div class="records-toolbar">
+      <select id="monthFilter" onchange="renderTable()"></select>
+      <span class="spacer"></span>
+      <button class="btn btn-small btn-outline" onclick="exportCSV(false)">Export this month (CSV)</button>
+      <button class="btn btn-small btn-outline" onclick="exportCSV(true)">Export all</button>
+    </div>
+    <div style="overflow:auto">
+      <table id="recTable">
+        <thead><tr>
+          <th>Inv #</th><th>Date</th><th>Patient</th><th>X-ray</th>
+          <th class="num">Final ₹</th><th>Mode</th><th>Sheet</th><th></th>
+        </tr></thead>
+        <tbody id="recBody"></tbody>
+      </table>
+      <div class="empty" id="emptyMsg">No invoices yet. Saved invoices appear here.</div>
+    </div>
+    <div class="summary" id="summary"></div>
+  </div>
+</main>
+
+<!-- ===== SETTINGS MODAL ===== -->
+<div class="modal-bg" id="settingsModal">
+  <div class="modal">
+    <h3>Settings</h3>
+    <div class="hint">Everything here is stored only in this browser.</div>
+
+    <div class="settings-section">
+      <h4>Clinic details (printed on receipt)</h4>
+      <label>Clinic name</label><input id="sName">
+      <label>Address</label><input id="sAddress">
+      <div class="row">
+        <div><label>Contact</label><input id="sContact"></div>
+        <div><label>Invoice prefix</label><input id="sPrefix" placeholder="XR"></div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h4>X-ray list &amp; prices</h4>
+      <div class="list-edit" id="xrayList"></div>
+      <div class="add-line">
+        <input id="newXrayName" placeholder="e.g., B/L Ankles AP">
+        <input id="newXrayPrice" class="price" type="number" placeholder="Price ₹">
+        <button class="btn btn-small" onclick="addXray()">Add</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h4>Referral doctors</h4>
+      <div class="list-edit" id="doctorList"></div>
+      <div class="add-line">
+        <input id="newDoctorName" placeholder="e.g., Dr. Ramesh (Ortho)">
+        <button class="btn btn-small" onclick="addDoctor()">Add</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h4>Backup &amp; restore</h4>
+      <div class="hint">Browser data can be lost (new PC, cleared browser). Download a backup regularly — it contains all invoices, settings, and the invoice counter.</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap">
+        <button class="btn btn-small" onclick="exportBackup()">⬇ Download backup (.json)</button>
+        <button class="btn btn-small btn-outline" onclick="document.getElementById('restoreFile').click()">⬆ Restore from backup…</button>
+        <input type="file" id="restoreFile" accept=".json,application/json" style="display:none" onchange="importBackup(this.files[0])">
+      </div>
+      <div class="hint" id="backupInfo" style="margin-top:8px"></div>
+    </div>
+
+    <div class="settings-section">
+      <h4>Google Sheet sync (optional)</h4>
+      <div class="hint">Paste your Google Apps Script Web App URL. Leave blank to keep billing offline-only.</div>
+      <input id="sScriptUrl" placeholder="https://script.google.com/macros/s/…/exec">
+    </div>
+
+    <div style="display:flex; gap:10px; margin-top:18px; justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeSettings()">Cancel</button>
+      <button class="btn btn-small" style="padding:9px 18px" onclick="saveSettings()">Save settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RECEIPT ===== -->
+<div id="receiptWrap"><div class="receipt" id="receipt"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= STORAGE ================= */
+const LS = { settings:'krc_settings', entries:'krc_entries', counters:'krc_counters' };
+
+const DEFAULT_XRAYS = [
+  {name:'Chest PA', price:300},
+  {name:'B/L Hands with Wrists AP', price:400},
+  {name:'B/L Feet AP', price:400},
+  {name:'B/L Knees AP (Standing)', price:400},
+  {name:'B/L Knees Lateral', price:400},
+  {name:'Pelvis with B/L Hips AP', price:400},
+  {name:'L-S Spine AP & Lateral', price:500},
+  {name:'Cervical Spine AP & Lateral', price:500},
+  {name:'Sacroiliac Joints AP', price:350},
+  {name:'Shoulder AP', price:300},
+  {name:'Single Joint (any)', price:300}
+];
+
+const DEFAULT_SETTINGS = {
+  clinicName:'Kurnool Rheumatology Center',
+  address:'87/654, Opposite Amma Hospital, Madhava Nagar, Kurnool',
+  contact:'8333837666',
+  prefix:'XR',
+  scriptUrl:'',
+  xrays:DEFAULT_XRAYS,
+  doctors:[]
+};
+
+let settings = load(LS.settings, DEFAULT_SETTINGS);
+let entries  = load(LS.entries, []);
+let counters = load(LS.counters, {});
+
+function load(k,fallback){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):structuredClone(fallback);}catch(e){return structuredClone(fallback);} }
+function persist(){ localStorage.setItem(LS.settings,JSON.stringify(settings)); localStorage.setItem(LS.entries,JSON.stringify(entries)); localStorage.setItem(LS.counters,JSON.stringify(counters)); }
+
+/* ================= INVOICE NUMBER (Indian FY) ================= */
+function fyOf(dateStr){
+  const d = new Date(dateStr);
+  const y = d.getFullYear(), m = d.getMonth()+1;
+  const start = m>=4 ? y : y-1;
+  return start + '-' + String((start+1)%100).padStart(2,'0');
+}
+function nextInvoiceNo(dateStr){
+  const fy = fyOf(dateStr);
+  const n = (counters[fy]||0)+1;
+  return settings.prefix + '/' + fy + '/' + String(n).padStart(4,'0');
+}
+function commitInvoiceNo(dateStr){
+  const fy = fyOf(dateStr);
+  counters[fy] = (counters[fy]||0)+1;
+}
+
+/* ================= FORM ================= */
+function todayStr(){ const d=new Date(); return d.toISOString().slice(0,10); }
+
+function refreshDropdowns(){
+  const dx=document.getElementById('fXray');
+  dx.innerHTML='<option value="">— select X-ray —</option>'+settings.xrays.map(x=>`<option value="${esc(x.name)}" data-price="${x.price}">${esc(x.name)} — ₹${x.price}</option>`).join('');
+  const dd=document.getElementById('fDoctor');
+  dd.innerHTML='<option value="Self">Self / Walk-in</option>'+settings.doctors.map(d=>`<option>${esc(d)}</option>`).join('');
+}
+function onXrayChange(){
+  const sel=document.getElementById('fXray');
+  const opt=sel.options[sel.selectedIndex];
+  if(opt && opt.dataset.price) document.getElementById('fAmount').value=opt.dataset.price;
+  recalc();
+}
+function recalc(){
+  const a=parseFloat(document.getElementById('fAmount').value)||0;
+  const d=parseFloat(document.getElementById('fDiscount').value)||0;
+  document.getElementById('fFinal').textContent='₹ '+Math.max(a-d,0).toLocaleString('en-IN');
+}
+function refreshInvoicePreview(){
+  document.getElementById('fInvoice').value=nextInvoiceNo(document.getElementById('fDate').value||todayStr());
+}
+
+function saveInvoice(){
+  const date=document.getElementById('fDate').value;
+  const name=document.getElementById('fName').value.trim();
+  const xray=document.getElementById('fXray').value;
+  const amount=parseFloat(document.getElementById('fAmount').value);
+  if(!date) return toast('Select a date');
+  if(!name) return toast('Enter the patient name');
+  if(!xray) return toast('Select the X-ray');
+  if(!(amount>=0)) return toast('Enter the amount');
+  const discount=parseFloat(document.getElementById('fDiscount').value)||0;
+
+  const entry={
+    id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+    invoiceNo:nextInvoiceNo(date),
+    date, patientName:name,
+    age:document.getElementById('fAge').value,
+    sex:document.getElementById('fSex').value,
+    referredBy:document.getElementById('fDoctor').value,
+    xray, amount, discount,
+    finalAmount:Math.max(amount-discount,0),
+    paymentMode:document.getElementById('fMode').value,
+    synced:false
+  };
+  commitInvoiceNo(date);
+  entries.push(entry);
+  persist();
+  buildMonthFilter(); renderTable();
+  syncEntry(entry);
+  printReceipt(entry);
+
+  /* reset for next patient */
+  ['fName','fAge'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fXray').value='';
+  document.getElementById('fAmount').value='';
+  document.getElementById('fDiscount').value='0';
+  recalc(); refreshInvoicePreview();
+  document.getElementById('fName').focus();
+}
+
+/* ================= RECEIPT ================= */
+function printReceipt(e){
+  const inr=n=>'₹ '+Number(n).toLocaleString('en-IN');
+  document.getElementById('receipt').innerHTML=`
+    <div class="r-head">
+      <h2>${esc(settings.clinicName)}</h2>
+      <div class="r-sub">${esc(settings.address)} &nbsp;·&nbsp; Ph: ${esc(settings.contact)}</div>
+    </div>
+    <div class="r-meta">
+      <span><b>Invoice:</b> ${esc(e.invoiceNo)}</span>
+      <span><b>Date:</b> ${formatDate(e.date)}</span>
+    </div>
+    <div class="r-meta">
+      <span><b>Patient:</b> ${esc(e.patientName)} &nbsp; (${esc(e.age)||'–'} / ${esc(e.sex)})</span>
+      <span><b>Ref:</b> ${esc(e.referredBy)}</span>
+    </div>
+    <div class="r-title">X-ray Receipt</div>
+    <table>
+      <tr><th>Investigation</th><th class="amt">Amount</th></tr>
+      <tr><td>${esc(e.xray)}</td><td class="amt">${inr(e.amount)}</td></tr>
+      ${e.discount>0?`<tr><td>Discount</td><td class="amt">− ${inr(e.discount)}</td></tr>`:''}
+      <tr class="total-row"><td>Total (${esc(e.paymentMode)})</td><td class="amt">${inr(e.finalAmount)}</td></tr>
+    </table>
+    <div class="r-foot">
+      <span>Thank you. Wishing you good health.</span>
+      <span class="sig">Authorised signatory</span>
+    </div>`;
+  setTimeout(()=>window.print(),150);
+}
+
+/* ================= RECORDS TABLE ================= */
+function monthKey(d){ return d.slice(0,7); }
+function buildMonthFilter(){
+  const sel=document.getElementById('monthFilter');
+  const months=[...new Set(entries.map(e=>monthKey(e.date)))].sort().reverse();
+  const cur=sel.value;
+  sel.innerHTML=months.map(m=>`<option value="${m}">${formatMonth(m)}</option>`).join('')||'<option value="">—</option>';
+  if(months.includes(cur)) sel.value=cur;
+}
+function renderTable(){
+  const m=document.getElementById('monthFilter').value;
+  const rows=entries.filter(e=>monthKey(e.date)===m).sort((a,b)=>b.invoiceNo.localeCompare(a.invoiceNo));
+  const body=document.getElementById('recBody');
+  body.innerHTML=rows.map(e=>`
+    <tr>
+      <td>${esc(e.invoiceNo.split('/').pop())}</td>
+      <td>${formatDate(e.date)}</td>
+      <td>${esc(e.patientName)}<br><small style="color:var(--muted)">${esc(e.referredBy)}</small></td>
+      <td>${esc(e.xray)}</td>
+      <td class="num"><b>${e.finalAmount.toLocaleString('en-IN')}</b>${e.discount>0?`<br><small style="color:var(--amber)">−${e.discount}</small>`:''}</td>
+      <td>${esc(e.paymentMode)}</td>
+      <td>${settings.scriptUrl ? (e.synced?'<span class="pill ok">synced</span>':'<span class="pill pending">pending</span>') : '<span class="pill local">local</span>'}</td>
+      <td>
+        <button class="icon-btn" title="Reprint receipt" onclick="reprint('${e.id}')">🖨</button>
+        <button class="icon-btn" title="Delete" onclick="delEntry('${e.id}')">✕</button>
+      </td>
+    </tr>`).join('');
+  document.getElementById('emptyMsg').style.display=rows.length?'none':'block';
+
+  const total=rows.reduce((s,e)=>s+e.finalAmount,0);
+  const byMode={};
+  rows.forEach(e=>byMode[e.paymentMode]=(byMode[e.paymentMode]||0)+e.finalAmount);
+  document.getElementById('summary').innerHTML=
+    `<span>Invoices: <b>${rows.length}</b></span>
+     <span>Collection: <b>₹ ${total.toLocaleString('en-IN')}</b></span>`+
+    Object.entries(byMode).map(([k,v])=>`<span>${k}: <b>₹ ${v.toLocaleString('en-IN')}</b></span>`).join('');
+}
+function reprint(id){ const e=entries.find(x=>x.id===id); if(e) printReceipt(e); }
+function delEntry(id){
+  const e=entries.find(x=>x.id===id);
+  if(!e) return;
+  if(!confirm('Delete invoice '+e.invoiceNo+' for '+e.patientName+'? (The invoice number will not be reused.)')) return;
+  entries=entries.filter(x=>x.id!==id);
+  persist(); buildMonthFilter(); renderTable();
+}
+
+/* ================= CSV EXPORT ================= */
+function exportCSV(all){
+  const m=document.getElementById('monthFilter').value;
+  const rows=all?entries:entries.filter(e=>monthKey(e.date)===m);
+  if(!rows.length) return toast('Nothing to export');
+  const head=['Invoice No','Date','Patient Name','Age','Sex','Referred By','X-ray','Amount','Discount','Final','Payment Mode'];
+  const csv=[head.join(',')].concat(rows.map(e=>[
+    e.invoiceNo,e.date,q(e.patientName),e.age,e.sex,q(e.referredBy),q(e.xray),e.amount,e.discount,e.finalAmount,e.paymentMode
+  ].join(','))).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=all?'KRC_xray_billing_all.csv':('KRC_xray_billing_'+m+'.csv');
+  a.click();
+}
+function q(s){ s=String(s||''); return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; }
+
+/* ================= GOOGLE SHEET SYNC ================= */
+async function syncEntry(e){
+  if(!settings.scriptUrl) { renderTable(); return; }
+  try{
+    const res=await fetch(settings.scriptUrl,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(e)
+    });
+    if(res.ok){ e.synced=true; persist(); }
+  }catch(err){ /* stays pending; retry via Sync pending */ }
+  renderTable();
+}
+async function syncAllPending(){
+  if(!settings.scriptUrl) return toast('Add your Apps Script URL in Settings first');
+  const pending=entries.filter(e=>!e.synced);
+  if(!pending.length) return toast('Everything is already synced');
+  toast('Syncing '+pending.length+' invoice(s)…');
+  for(const e of pending){ await syncEntry(e); }
+  toast('Sync finished');
+}
+
+/* ================= BACKUP & RESTORE ================= */
+function exportBackup(){
+  const payload={app:'krc-billing', version:1, exportedAt:new Date().toISOString(),
+                 settings, entries, counters};
+  const blob=new Blob([JSON.stringify(payload,null,1)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='KRC_billing_backup_'+todayStr()+'.json';
+  a.click();
+  localStorage.setItem('krc_lastBackup', todayStr());
+  updateBackupInfo();
+  toast('Backup downloaded — keep a copy in Google Drive or a pen drive');
+}
+function importBackup(file){
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const d=JSON.parse(reader.result);
+      if(d.app!=='krc-billing' || !Array.isArray(d.entries)) throw new Error('bad file');
+      if(!confirm('Restore backup from '+(d.exportedAt||'unknown date')+'?\n\nThis will REPLACE the '+entries.length+' invoice(s) currently in this browser with the '+d.entries.length+' invoice(s) in the backup.')) return;
+      settings=d.settings; entries=d.entries; counters=d.counters||{};
+      persist();
+      document.getElementById('hClinicName').innerHTML=esc(settings.clinicName)+' <span>· X-ray Billing</span>';
+      document.getElementById('hClinicSub').textContent=settings.address+' · '+settings.contact;
+      refreshDropdowns(); refreshInvoicePreview(); buildMonthFilter(); renderTable();
+      closeSettings(); toast('Backup restored — '+entries.length+' invoice(s) loaded');
+    }catch(e){ toast('That file is not a valid KRC billing backup'); }
+  };
+  reader.readAsText(file);
+  document.getElementById('restoreFile').value='';
+}
+function updateBackupInfo(){
+  const el=document.getElementById('backupInfo');
+  if(!el) return;
+  const last=localStorage.getItem('krc_lastBackup');
+  el.textContent=last?('Last backup downloaded: '+formatDate(last)):'No backup taken yet from this browser.';
+}
+
+/* ================= SETTINGS ================= */
+function openSettings(){
+  document.getElementById('sName').value=settings.clinicName;
+  document.getElementById('sAddress').value=settings.address;
+  document.getElementById('sContact').value=settings.contact;
+  document.getElementById('sPrefix').value=settings.prefix;
+  document.getElementById('sScriptUrl').value=settings.scriptUrl;
+  renderEditLists();
+  updateBackupInfo();
+  document.getElementById('settingsModal').classList.add('open');
+}
+function closeSettings(){ document.getElementById('settingsModal').classList.remove('open'); }
+function renderEditLists(){
+  document.getElementById('xrayList').innerHTML=settings.xrays.map((x,i)=>
+    `<div class="li"><span class="nm">${esc(x.name)}</span><span class="pr">₹${x.price}</span>
+     <button class="icon-btn" onclick="removeXray(${i})">✕</button></div>`).join('')||'<div class="li" style="color:var(--muted)">No X-rays yet</div>';
+  document.getElementById('doctorList').innerHTML=settings.doctors.map((d,i)=>
+    `<div class="li"><span class="nm">${esc(d)}</span>
+     <button class="icon-btn" onclick="removeDoctor(${i})">✕</button></div>`).join('')||'<div class="li" style="color:var(--muted)">No doctors yet — "Self / Walk-in" is always available</div>';
+}
+function addXray(){
+  const n=document.getElementById('newXrayName').value.trim();
+  const p=parseFloat(document.getElementById('newXrayPrice').value);
+  if(!n||!(p>=0)) return toast('Enter X-ray name and price');
+  settings.xrays.push({name:n,price:p});
+  document.getElementById('newXrayName').value=''; document.getElementById('newXrayPrice').value='';
+  renderEditLists();
+}
+function removeXray(i){ settings.xrays.splice(i,1); renderEditLists(); }
+function addDoctor(){
+  const n=document.getElementById('newDoctorName').value.trim();
+  if(!n) return;
+  settings.doctors.push(n);
+  document.getElementById('newDoctorName').value='';
+  renderEditLists();
+}
+function removeDoctor(i){ settings.doctors.splice(i,1); renderEditLists(); }
+function saveSettings(){
+  settings.clinicName=document.getElementById('sName').value.trim()||settings.clinicName;
+  settings.address=document.getElementById('sAddress').value.trim();
+  settings.contact=document.getElementById('sContact').value.trim();
+  settings.prefix=document.getElementById('sPrefix').value.trim()||'XR';
+  settings.scriptUrl=document.getElementById('sScriptUrl').value.trim();
+  persist();
+  document.getElementById('hClinicName').innerHTML=esc(settings.clinicName)+' <span>· X-ray Billing</span>';
+  document.getElementById('hClinicSub').textContent=settings.address+' · '+settings.contact;
+  refreshDropdowns(); refreshInvoicePreview(); renderTable();
+  closeSettings(); toast('Settings saved');
+}
+
+/* ================= UTIL ================= */
+function esc(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function formatDate(d){ const [y,m,dd]=d.split('-'); return dd+'-'+m+'-'+y; }
+function formatMonth(m){ const [y,mm]=m.split('-'); return new Date(y,mm-1,1).toLocaleString('en-IN',{month:'long',year:'numeric'}); }
+let toastTimer;
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2600); }
+
+/* ================= INIT ================= */
+document.getElementById('fDate').value=todayStr();
+document.getElementById('fDate').addEventListener('change',refreshInvoicePreview);
+document.getElementById('hClinicName').innerHTML=esc(settings.clinicName)+' <span>· X-ray Billing</span>';
+document.getElementById('hClinicSub').textContent=settings.address+' · '+settings.contact;
+refreshDropdowns(); refreshInvoicePreview(); buildMonthFilter(); renderTable(); recalc();
+</script>
+</body>
+</html>

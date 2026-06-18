@@ -18,7 +18,11 @@
   header.app h1{font-size:1.15rem; font-weight:600; letter-spacing:.3px}
   header.app h1 span{color:#7fd1cb; font-weight:400}
   header.app .clinic-sub{font-size:.78rem; color:#b9c4d4; margin-top:2px}
-  .hdr-actions{display:flex; gap:8px}
+  .hdr-actions{display:flex; gap:8px; align-items:center}
+  .sync-dot{font-size:.72rem; color:#b9c4d4; display:flex; align-items:center; gap:5px}
+  .sync-dot b{width:8px; height:8px; border-radius:50%; background:#6b7a90; display:inline-block}
+  .sync-dot.on b{background:#5fce9a}
+  .sync-dot.off b{background:#e0a45f}
 
   main{max-width:1100px; margin:22px auto; padding:0 16px; display:grid; grid-template-columns:430px 1fr; gap:20px; align-items:start}
   @media(max-width:920px){ main{grid-template-columns:1fr} }
@@ -41,13 +45,24 @@
   .btn-ghost{background:transparent; color:#d6e4ff; border:1px solid #4a5f82; font-weight:500; padding:7px 13px; font-size:.82rem}
   .btn-small{padding:5px 10px; font-size:.78rem; background:var(--navy-2); color:#fff}
   .btn-outline{background:#fff; border:1px solid var(--line); color:var(--navy-2)}
-  .btn-danger{background:#fff; border:1px solid #e3b9b1; color:var(--red)}
 
-  .final-strip{margin-top:14px; background:var(--navy); color:#fff; border-radius:8px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center}
-  .final-strip .label{font-size:.75rem; text-transform:uppercase; letter-spacing:.08em; color:#9fb2cc}
-  .final-strip .value{font-size:1.5rem; font-weight:700; color:#7fd1cb}
+  /* line item builder */
+  .add-xray{display:flex; gap:8px; align-items:flex-end}
+  .add-xray > div{flex:1}
+  .add-xray button{flex:0 0 auto; padding:8px 14px; height:37px}
+  .lines{margin-top:12px; border:1px solid var(--line); border-radius:8px; overflow:hidden}
+  .lines .ln{display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid #f0ede6; font-size:.9rem}
+  .lines .ln:last-child{border-bottom:none}
+  .lines .ln .lnm{flex:1}
+  .lines .ln .lpr{font-weight:600; color:var(--navy-2)}
+  .lines .empty-ln{padding:14px; text-align:center; color:var(--muted); font-size:.85rem}
 
-  /* Records */
+  .final-strip{margin-top:14px; background:var(--navy); color:#fff; border-radius:8px; padding:12px 16px}
+  .final-strip .sub{display:flex; justify-content:space-between; font-size:.82rem; color:#aebfd6; padding:2px 0}
+  .final-strip .tot{display:flex; justify-content:space-between; align-items:center; border-top:1px solid #3a4f6f; margin-top:6px; padding-top:8px}
+  .final-strip .tot .label{font-size:.75rem; text-transform:uppercase; letter-spacing:.08em; color:#9fb2cc}
+  .final-strip .tot .value{font-size:1.5rem; font-weight:700; color:#7fd1cb}
+
   .records-toolbar{display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:14px 18px 4px}
   .records-toolbar select{width:auto}
   .records-toolbar .spacer{flex:1}
@@ -65,13 +80,12 @@
   .empty{padding:34px; text-align:center; color:var(--muted); font-size:.9rem}
   .icon-btn{background:none; border:none; cursor:pointer; font-size:.95rem; padding:2px 4px}
 
-  /* Modal */
   .modal-bg{position:fixed; inset:0; background:rgba(22,38,61,.45); display:none; align-items:flex-start; justify-content:center; padding:30px 14px; overflow:auto; z-index:50}
   .modal-bg.open{display:flex}
   .modal{background:#fff; border-radius:12px; max-width:560px; width:100%; padding:22px; box-shadow:0 20px 60px rgba(0,0,0,.25)}
   .modal h3{color:var(--navy); margin-bottom:4px}
   .modal .hint{font-size:.8rem; color:var(--muted); margin-bottom:12px}
-  .list-edit{border:1px solid var(--line); border-radius:8px; max-height:220px; overflow:auto; margin:8px 0}
+  .list-edit{border:1px solid var(--line); border-radius:8px; max-height:200px; overflow:auto; margin:8px 0}
   .list-edit .li{display:flex; align-items:center; gap:8px; padding:7px 10px; border-bottom:1px solid #f0ede6; font-size:.88rem}
   .list-edit .li:last-child{border-bottom:none}
   .list-edit .li .nm{flex:1}
@@ -81,10 +95,12 @@
   .add-line input.price{flex:0 0 110px}
   .settings-section{margin-top:18px; padding-top:14px; border-top:1px dashed var(--line)}
   .settings-section h4{font-size:.8rem; text-transform:uppercase; letter-spacing:.07em; color:var(--teal); margin-bottom:6px}
+  .test-result{font-size:.8rem; margin-top:8px; padding:8px 10px; border-radius:6px; display:none}
+  .test-result.ok{display:block; background:#e4f3ea; color:var(--green)}
+  .test-result.err{display:block; background:#fbe7e3; color:var(--red)}
   .toast{position:fixed; bottom:22px; left:50%; transform:translateX(-50%); background:var(--navy); color:#fff; padding:11px 20px; border-radius:8px; font-size:.88rem; box-shadow:var(--shadow); opacity:0; transition:opacity .25s; pointer-events:none; z-index:99}
   .toast.show{opacity:1}
 
-  /* ====== RECEIPT (print) ====== */
   #receiptWrap{display:none}
   @media print{
     body > *:not(#receiptWrap){display:none !important}
@@ -101,6 +117,7 @@
   .receipt td,.receipt th{padding:5px 6px; font-family:inherit}
   .receipt th{border-bottom:1px solid #555; font-size:8.5pt; letter-spacing:.05em; text-transform:uppercase; text-align:left}
   .receipt .amt{text-align:right}
+  .receipt .sub-row td{font-size:9.5pt; color:#444}
   .receipt .total-row td{border-top:1.5px solid #16263d; font-weight:bold; font-size:11pt}
   .receipt .r-foot{display:flex; justify-content:space-between; align-items:flex-end; margin-top:14mm; font-size:9pt}
   .receipt .sig{border-top:1px solid #444; padding-top:3px; width:48mm; text-align:center}
@@ -114,13 +131,13 @@
     <div class="clinic-sub" id="hClinicSub">87/654, Opposite Amma Hospital, Madhava Nagar, Kurnool · 8333837666</div>
   </div>
   <div class="hdr-actions">
+    <span class="sync-dot" id="syncDot" title="Sheet sync status"><b></b><span id="syncLabel">offline mode</span></span>
     <button class="btn btn-ghost" onclick="syncAllPending()">⇪ Sync pending</button>
     <button class="btn btn-ghost" onclick="openSettings()">⚙ Settings</button>
   </div>
 </header>
 
 <main>
-  <!-- ===== NEW INVOICE ===== -->
   <div class="card">
     <h2>New Invoice</h2>
     <div class="body">
@@ -142,11 +159,15 @@
         </div>
       </div>
 
-      <label for="fXray">X-ray</label>
-      <select id="fXray" onchange="onXrayChange()"></select>
+      <label for="fXray">Add X-ray view(s)</label>
+      <div class="add-xray">
+        <div><select id="fXray"></select></div>
+        <button class="btn btn-small" onclick="addLine()">＋ Add</button>
+      </div>
 
-      <div class="row">
-        <div><label for="fAmount">Amount (₹)</label><input id="fAmount" type="number" min="0" oninput="recalc()"></div>
+      <div class="lines" id="lineBox"></div>
+
+      <div class="row" style="margin-top:12px">
         <div><label for="fDiscount">Discount (₹)</label><input id="fDiscount" type="number" min="0" value="0" oninput="recalc()"></div>
         <div><label for="fMode">Payment</label>
           <select id="fMode"><option>Cash</option><option>UPI</option><option>Card</option></select>
@@ -154,15 +175,15 @@
       </div>
 
       <div class="final-strip">
-        <span class="label">Final amount</span>
-        <span class="value" id="fFinal">₹ 0</span>
+        <div class="sub"><span>Subtotal</span><span id="fSubtotal">₹ 0</span></div>
+        <div class="sub" id="fDiscRow" style="display:none"><span>Discount</span><span id="fDiscShow">− ₹ 0</span></div>
+        <div class="tot"><span class="label">Final amount</span><span class="value" id="fFinal">₹ 0</span></div>
       </div>
 
       <button class="btn btn-primary" onclick="saveInvoice()">Save &amp; print receipt</button>
     </div>
   </div>
 
-  <!-- ===== RECORDS ===== -->
   <div class="card">
     <h2>Records</h2>
     <div class="records-toolbar">
@@ -174,7 +195,7 @@
     <div style="overflow:auto">
       <table id="recTable">
         <thead><tr>
-          <th>Inv #</th><th>Date</th><th>Patient</th><th>X-ray</th>
+          <th>Inv #</th><th>Date</th><th>Patient</th><th>X-rays</th>
           <th class="num">Final ₹</th><th>Mode</th><th>Sheet</th><th></th>
         </tr></thead>
         <tbody id="recBody"></tbody>
@@ -185,7 +206,6 @@
   </div>
 </main>
 
-<!-- ===== SETTINGS MODAL ===== -->
 <div class="modal-bg" id="settingsModal">
   <div class="modal">
     <h3>Settings</h3>
@@ -205,7 +225,7 @@
       <h4>X-ray list &amp; prices</h4>
       <div class="list-edit" id="xrayList"></div>
       <div class="add-line">
-        <input id="newXrayName" placeholder="e.g., B/L Ankles AP">
+        <input id="newXrayName" placeholder="e.g., X-ray Both ankles AP">
         <input id="newXrayPrice" class="price" type="number" placeholder="Price ₹">
         <button class="btn btn-small" onclick="addXray()">Add</button>
       </div>
@@ -232,9 +252,11 @@
     </div>
 
     <div class="settings-section">
-      <h4>Google Sheet sync (optional)</h4>
-      <div class="hint">Paste your Google Apps Script Web App URL. Leave blank to keep billing offline-only.</div>
+      <h4>Google Sheet sync &amp; shared numbering</h4>
+      <div class="hint">Paste your Apps Script Web App URL (ends in /exec). When set, invoice numbers continue from the Sheet across all systems. Leave blank for offline-only.</div>
       <input id="sScriptUrl" placeholder="https://script.google.com/macros/s/…/exec">
+      <div style="margin-top:8px"><button class="btn btn-small btn-outline" onclick="testConnection()">🔌 Test connection</button></div>
+      <div class="test-result" id="testResult"></div>
     </div>
 
     <div style="display:flex; gap:10px; margin-top:18px; justify-content:flex-end">
@@ -244,7 +266,6 @@
   </div>
 </div>
 
-<!-- ===== RECEIPT ===== -->
 <div id="receiptWrap"><div class="receipt" id="receipt"></div></div>
 <div class="toast" id="toast"></div>
 
@@ -253,8 +274,26 @@
 const LS = { settings:'krc_settings', entries:'krc_entries', counters:'krc_counters' };
 
 const DEFAULT_XRAYS = [
-  {name:'Single view', price:400},
-  {name:'Double view', price:600}
+  {name:'X-ray Chest PA', price:400},
+  {name:'X-ray Pelvis with both hips', price:400},
+  {name:'X-ray Both knees AP (standing)', price:400},
+  {name:'X-ray Both hands AP', price:400},
+  {name:'X-ray Both wrists AP', price:400},
+  {name:'X-ray Both feet AP', price:400},
+  {name:'X-ray Both shoulders AP', price:400},
+  {name:'X-ray Sacroiliac joints AP', price:400},
+  {name:'X-ray Single joint AP (one view)', price:400},
+  {name:'X-ray LS Spine - AP and Lateral', price:600},
+  {name:'X-ray Cervical Spine - AP and Lateral', price:600},
+  {name:'X-ray Dorsal Spine - AP and Lateral', price:600},
+  {name:'X-ray Knee - AP and Lateral', price:600},
+  {name:'X-ray Shoulder - AP and Axillary', price:600},
+  {name:'X-ray Elbow - AP and Lateral', price:600},
+  {name:'X-ray Wrist - AP and Lateral', price:600},
+  {name:'X-ray Hand - AP and Oblique', price:600},
+  {name:'X-ray Ankle - AP and Lateral', price:600},
+  {name:'X-ray Foot - AP and Oblique', price:600},
+  {name:'X-ray Skull - AP and Lateral', price:600}
 ];
 
 const DEFAULT_SETTINGS = {
@@ -270,62 +309,109 @@ const DEFAULT_SETTINGS = {
 let settings = load(LS.settings, DEFAULT_SETTINGS);
 let entries  = load(LS.entries, []);
 let counters = load(LS.counters, {});
+let currentItems = [];
 
 function load(k,fallback){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):structuredClone(fallback);}catch(e){return structuredClone(fallback);} }
 function persist(){ localStorage.setItem(LS.settings,JSON.stringify(settings)); localStorage.setItem(LS.entries,JSON.stringify(entries)); localStorage.setItem(LS.counters,JSON.stringify(counters)); }
 
 /* ================= INVOICE NUMBER (Indian FY) ================= */
 function fyOf(dateStr){
-  const d = new Date(dateStr);
-  const y = d.getFullYear(), m = d.getMonth()+1;
+  const d=new Date(dateStr); const y=d.getFullYear(), m=d.getMonth()+1;
   const start = m>=4 ? y : y-1;
-  return start + '-' + String((start+1)%100).padStart(2,'0');
+  return start+'-'+String((start+1)%100).padStart(2,'0');
 }
 function nextInvoiceNo(dateStr){
-  const fy = fyOf(dateStr);
-  const n = (counters[fy]||0)+1;
-  return settings.prefix + '/' + fy + '/' + String(n).padStart(4,'0');
+  const fy=fyOf(dateStr); const n=(counters[fy]||0)+1;
+  return settings.prefix+'/'+fy+'/'+String(n).padStart(4,'0');
 }
-function commitInvoiceNo(dateStr){
-  const fy = fyOf(dateStr);
-  counters[fy] = (counters[fy]||0)+1;
+function commitInvoiceNo(dateStr){ const fy=fyOf(dateStr); counters[fy]=(counters[fy]||0)+1; }
+
+/* ================= SHEET: fetch last number ================= */
+async function fetchLastNumber(fy){
+  if(!settings.scriptUrl) return null;
+  const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),5000);
+  try{
+    const res=await fetch(settings.scriptUrl+'?action=lastInvoice&fy='+encodeURIComponent(fy),{signal:ctrl.signal});
+    clearTimeout(t);
+    const d=await res.json();
+    return (typeof d.lastNumber==='number')?d.lastNumber:null;
+  }catch(e){ clearTimeout(t); return null; }
+}
+async function seedFromSheet(){
+  if(!settings.scriptUrl){ setSyncDot('off','offline mode'); return; }
+  const fy=fyOf(todayStr());
+  const last=await fetchLastNumber(fy);
+  if(last!==null){
+    counters[fy]=Math.max(counters[fy]||0,last);
+    persist(); refreshInvoicePreview();
+    setSyncDot('on','sheet connected');
+  } else {
+    setSyncDot('off','sheet unreachable');
+  }
+}
+function setSyncDot(state,label){
+  const d=document.getElementById('syncDot');
+  d.className='sync-dot '+(state==='on'?'on':'off');
+  document.getElementById('syncLabel').textContent=label;
 }
 
-/* ================= FORM ================= */
+/* ================= FORM / LINE ITEMS ================= */
 function todayStr(){ const d=new Date(); return d.toISOString().slice(0,10); }
 
 function refreshDropdowns(){
   const dx=document.getElementById('fXray');
-  dx.innerHTML='<option value="">— select X-ray —</option>'+settings.xrays.map(x=>`<option value="${esc(x.name)}" data-price="${x.price}">${esc(x.name)} — ₹${x.price}</option>`).join('');
+  dx.innerHTML='<option value="">— select view —</option>'+settings.xrays.map((x,i)=>`<option value="${i}">${esc(x.name)} — ₹${x.price}</option>`).join('');
   const dd=document.getElementById('fDoctor');
   dd.innerHTML='<option value="Self">Self / Walk-in</option>'+settings.doctors.map(d=>`<option>${esc(d)}</option>`).join('');
 }
-function onXrayChange(){
+function addLine(){
   const sel=document.getElementById('fXray');
-  const opt=sel.options[sel.selectedIndex];
-  if(opt && opt.dataset.price) document.getElementById('fAmount').value=opt.dataset.price;
-  recalc();
+  const i=sel.value;
+  if(i===''||i===null) return toast('Pick a view from the list first');
+  const x=settings.xrays[parseInt(i,10)];
+  currentItems.push({name:x.name, price:x.price});
+  sel.value='';
+  renderLines(); recalc();
+}
+function removeLine(idx){ currentItems.splice(idx,1); renderLines(); recalc(); }
+function renderLines(){
+  const box=document.getElementById('lineBox');
+  if(!currentItems.length){ box.innerHTML='<div class="empty-ln">No views added yet. Pick a view above and tap “＋ Add”. You can add several.</div>'; return; }
+  box.innerHTML=currentItems.map((it,i)=>`<div class="ln"><span class="lnm">${esc(it.name)}</span><span class="lpr">₹${it.price}</span><button class="icon-btn" title="Remove" onclick="removeLine(${i})">✕</button></div>`).join('');
 }
 function recalc(){
-  const a=parseFloat(document.getElementById('fAmount').value)||0;
-  const d=parseFloat(document.getElementById('fDiscount').value)||0;
-  document.getElementById('fFinal').textContent='₹ '+Math.max(a-d,0).toLocaleString('en-IN');
+  const subtotal=currentItems.reduce((s,it)=>s+(+it.price||0),0);
+  const disc=parseFloat(document.getElementById('fDiscount').value)||0;
+  const final=Math.max(subtotal-disc,0);
+  document.getElementById('fSubtotal').textContent='₹ '+subtotal.toLocaleString('en-IN');
+  const dr=document.getElementById('fDiscRow');
+  if(disc>0){ dr.style.display='flex'; document.getElementById('fDiscShow').textContent='− ₹ '+disc.toLocaleString('en-IN'); }
+  else dr.style.display='none';
+  document.getElementById('fFinal').textContent='₹ '+final.toLocaleString('en-IN');
 }
 function refreshInvoicePreview(){
   document.getElementById('fInvoice').value=nextInvoiceNo(document.getElementById('fDate').value||todayStr());
 }
 
-function saveInvoice(){
+async function saveInvoice(){
   const date=document.getElementById('fDate').value;
   const name=document.getElementById('fName').value.trim();
-  const xray=document.getElementById('fXray').value;
-  const amount=parseFloat(document.getElementById('fAmount').value);
   if(!date) return toast('Select a date');
   if(!name) return toast('Enter the patient name');
-  if(!xray) return toast('Select the X-ray');
-  if(!(amount>=0)) return toast('Enter the amount');
-  const discount=parseFloat(document.getElementById('fDiscount').value)||0;
+  if(!currentItems.length) return toast('Add at least one X-ray view');
 
+  const btn=event&&event.target; if(btn){ btn.disabled=true; btn.textContent='Saving…'; }
+
+  /* shared numbering: re-seed from sheet right before assigning */
+  const fy=fyOf(date);
+  if(settings.scriptUrl){
+    const last=await fetchLastNumber(fy);
+    if(last!==null){ counters[fy]=Math.max(counters[fy]||0,last); setSyncDot('on','sheet connected'); }
+    else setSyncDot('off','offline — provisional no.');
+  }
+
+  const subtotal=currentItems.reduce((s,it)=>s+(+it.price||0),0);
+  const discount=parseFloat(document.getElementById('fDiscount').value)||0;
   const entry={
     id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
     invoiceNo:nextInvoiceNo(date),
@@ -333,8 +419,10 @@ function saveInvoice(){
     age:document.getElementById('fAge').value,
     sex:document.getElementById('fSex').value,
     referredBy:document.getElementById('fDoctor').value,
-    xray, amount, discount,
-    finalAmount:Math.max(amount-discount,0),
+    items:currentItems.slice(),
+    xrayText:currentItems.map(it=>it.name).join('; '),
+    subtotal, discount,
+    finalAmount:Math.max(subtotal-discount,0),
     paymentMode:document.getElementById('fMode').value,
     synced:false
   };
@@ -342,21 +430,21 @@ function saveInvoice(){
   entries.push(entry);
   persist();
   buildMonthFilter(); renderTable();
-  syncEntry(entry);
   printReceipt(entry);
+  syncEntry(entry);
 
-  /* reset for next patient */
+  currentItems=[];
   ['fName','fAge'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('fXray').value='';
-  document.getElementById('fAmount').value='';
   document.getElementById('fDiscount').value='0';
-  recalc(); refreshInvoicePreview();
+  renderLines(); recalc(); refreshInvoicePreview();
+  if(btn){ btn.disabled=false; btn.textContent='Save & print receipt'; }
   document.getElementById('fName').focus();
 }
 
 /* ================= RECEIPT ================= */
 function printReceipt(e){
   const inr=n=>'₹ '+Number(n).toLocaleString('en-IN');
+  const itemRows=e.items.map(it=>`<tr><td>${esc(it.name)}</td><td class="amt">${inr(it.price)}</td></tr>`).join('');
   document.getElementById('receipt').innerHTML=`
     <div class="r-head">
       <h2>${esc(settings.clinicName)}</h2>
@@ -373,8 +461,8 @@ function printReceipt(e){
     <div class="r-title">X-ray Receipt</div>
     <table>
       <tr><th>Investigation</th><th class="amt">Amount</th></tr>
-      <tr><td>${esc(e.xray)}</td><td class="amt">${inr(e.amount)}</td></tr>
-      ${e.discount>0?`<tr><td>Discount</td><td class="amt">− ${inr(e.discount)}</td></tr>`:''}
+      ${itemRows}
+      ${e.discount>0?`<tr class="sub-row"><td>Subtotal</td><td class="amt">${inr(e.subtotal)}</td></tr><tr class="sub-row"><td>Discount</td><td class="amt">− ${inr(e.discount)}</td></tr>`:''}
       <tr class="total-row"><td>Total (${esc(e.paymentMode)})</td><td class="amt">${inr(e.finalAmount)}</td></tr>
     </table>
     <div class="r-foot">
@@ -384,7 +472,7 @@ function printReceipt(e){
   setTimeout(()=>window.print(),150);
 }
 
-/* ================= RECORDS TABLE ================= */
+/* ================= RECORDS ================= */
 function monthKey(d){ return d.slice(0,7); }
 function buildMonthFilter(){
   const sel=document.getElementById('monthFilter');
@@ -397,67 +485,55 @@ function renderTable(){
   const m=document.getElementById('monthFilter').value;
   const rows=entries.filter(e=>monthKey(e.date)===m).sort((a,b)=>b.invoiceNo.localeCompare(a.invoiceNo));
   const body=document.getElementById('recBody');
-  body.innerHTML=rows.map(e=>`
-    <tr>
+  body.innerHTML=rows.map(e=>{
+    const xr=(e.items&&e.items.length>1)?`${esc(e.items[0].name)} <small style="color:var(--muted)">+${e.items.length-1} more</small>`:esc(e.xrayText||(e.items&&e.items[0]&&e.items[0].name)||'');
+    return `<tr>
       <td>${esc(e.invoiceNo.split('/').pop())}</td>
       <td>${formatDate(e.date)}</td>
       <td>${esc(e.patientName)}<br><small style="color:var(--muted)">${esc(e.referredBy)}</small></td>
-      <td>${esc(e.xray)}</td>
+      <td>${xr}</td>
       <td class="num"><b>${e.finalAmount.toLocaleString('en-IN')}</b>${e.discount>0?`<br><small style="color:var(--amber)">−${e.discount}</small>`:''}</td>
       <td>${esc(e.paymentMode)}</td>
       <td>${settings.scriptUrl ? (e.synced?'<span class="pill ok">synced</span>':'<span class="pill pending">pending</span>') : '<span class="pill local">local</span>'}</td>
-      <td>
-        <button class="icon-btn" title="Reprint receipt" onclick="reprint('${e.id}')">🖨</button>
-        <button class="icon-btn" title="Delete" onclick="delEntry('${e.id}')">✕</button>
-      </td>
-    </tr>`).join('');
+      <td><button class="icon-btn" title="Reprint" onclick="reprint('${e.id}')">🖨</button><button class="icon-btn" title="Delete" onclick="delEntry('${e.id}')">✕</button></td>
+    </tr>`;}).join('');
   document.getElementById('emptyMsg').style.display=rows.length?'none':'block';
-
   const total=rows.reduce((s,e)=>s+e.finalAmount,0);
-  const byMode={};
-  rows.forEach(e=>byMode[e.paymentMode]=(byMode[e.paymentMode]||0)+e.finalAmount);
+  const byMode={}; rows.forEach(e=>byMode[e.paymentMode]=(byMode[e.paymentMode]||0)+e.finalAmount);
   document.getElementById('summary').innerHTML=
-    `<span>Invoices: <b>${rows.length}</b></span>
-     <span>Collection: <b>₹ ${total.toLocaleString('en-IN')}</b></span>`+
+    `<span>Invoices: <b>${rows.length}</b></span><span>Collection: <b>₹ ${total.toLocaleString('en-IN')}</b></span>`+
     Object.entries(byMode).map(([k,v])=>`<span>${k}: <b>₹ ${v.toLocaleString('en-IN')}</b></span>`).join('');
 }
 function reprint(id){ const e=entries.find(x=>x.id===id); if(e) printReceipt(e); }
 function delEntry(id){
-  const e=entries.find(x=>x.id===id);
-  if(!e) return;
+  const e=entries.find(x=>x.id===id); if(!e) return;
   if(!confirm('Delete invoice '+e.invoiceNo+' for '+e.patientName+'? (The invoice number will not be reused.)')) return;
   entries=entries.filter(x=>x.id!==id);
   persist(); buildMonthFilter(); renderTable();
 }
 
-/* ================= CSV EXPORT ================= */
+/* ================= CSV ================= */
 function exportCSV(all){
   const m=document.getElementById('monthFilter').value;
   const rows=all?entries:entries.filter(e=>monthKey(e.date)===m);
   if(!rows.length) return toast('Nothing to export');
-  const head=['Invoice No','Date','Patient Name','Age','Sex','Referred By','X-ray','Amount','Discount','Final','Payment Mode'];
+  const head=['Invoice No','Date','Patient Name','Age','Sex','Referred By','X-rays','Subtotal','Discount','Final','Payment Mode'];
   const csv=[head.join(',')].concat(rows.map(e=>[
-    e.invoiceNo,e.date,q(e.patientName),e.age,e.sex,q(e.referredBy),q(e.xray),e.amount,e.discount,e.finalAmount,e.paymentMode
+    e.invoiceNo,e.date,q(e.patientName),e.age,e.sex,q(e.referredBy),q(e.xrayText||''),e.subtotal,e.discount,e.finalAmount,e.paymentMode
   ].join(','))).join('\n');
   const blob=new Blob(['\ufeff'+csv],{type:'text/csv'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download=all?'KRC_xray_billing_all.csv':('KRC_xray_billing_'+m+'.csv');
-  a.click();
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=all?'KRC_xray_billing_all.csv':('KRC_xray_billing_'+m+'.csv'); a.click();
 }
 function q(s){ s=String(s||''); return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; }
 
-/* ================= GOOGLE SHEET SYNC ================= */
+/* ================= SYNC ================= */
 async function syncEntry(e){
-  if(!settings.scriptUrl) { renderTable(); return; }
+  if(!settings.scriptUrl){ renderTable(); return; }
   try{
-    const res=await fetch(settings.scriptUrl,{
-      method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify(e)
-    });
+    const res=await fetch(settings.scriptUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(e)});
     if(res.ok){ e.synced=true; persist(); }
-  }catch(err){ /* stays pending; retry via Sync pending */ }
+  }catch(err){}
   renderTable();
 }
 async function syncAllPending(){
@@ -468,18 +544,28 @@ async function syncAllPending(){
   for(const e of pending){ await syncEntry(e); }
   toast('Sync finished');
 }
+async function testConnection(){
+  const url=document.getElementById('sScriptUrl').value.trim();
+  const res=document.getElementById('testResult');
+  if(!url){ res.className='test-result err'; res.textContent='Paste the Web App URL first.'; return; }
+  res.className='test-result'; res.style.display='block'; res.textContent='Testing…';
+  const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),6000);
+  try{
+    const r=await fetch(url+'?action=lastInvoice&fy='+encodeURIComponent(fyOf(todayStr())),{signal:ctrl.signal});
+    clearTimeout(t);
+    const d=await r.json();
+    if(typeof d.lastNumber==='number'){ res.className='test-result ok'; res.textContent='✓ Connected. Last invoice number in Sheet for this FY: '+d.lastNumber+'. Next bill will be '+(d.lastNumber+1)+'.'; }
+    else { res.className='test-result err'; res.textContent='Reached the URL but got an unexpected reply. Re-check you pasted the /exec URL and redeployed after adding doGet.'; }
+  }catch(e){ clearTimeout(t); res.className='test-result err'; res.textContent='✗ Could not reach the script. Check: URL ends in /exec, deployment access = "Anyone", and you redeployed a New version.'; }
+}
 
-/* ================= BACKUP & RESTORE ================= */
+/* ================= BACKUP ================= */
 function exportBackup(){
-  const payload={app:'krc-billing', version:1, exportedAt:new Date().toISOString(),
-                 settings, entries, counters};
+  const payload={app:'krc-billing', version:2, exportedAt:new Date().toISOString(), settings, entries, counters};
   const blob=new Blob([JSON.stringify(payload,null,1)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='KRC_billing_backup_'+todayStr()+'.json';
-  a.click();
-  localStorage.setItem('krc_lastBackup', todayStr());
-  updateBackupInfo();
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='KRC_billing_backup_'+todayStr()+'.json'; a.click();
+  localStorage.setItem('krc_lastBackup',todayStr()); updateBackupInfo();
   toast('Backup downloaded — keep a copy in Google Drive or a pen drive');
 }
 function importBackup(file){
@@ -488,13 +574,11 @@ function importBackup(file){
   reader.onload=()=>{
     try{
       const d=JSON.parse(reader.result);
-      if(d.app!=='krc-billing' || !Array.isArray(d.entries)) throw new Error('bad file');
-      if(!confirm('Restore backup from '+(d.exportedAt||'unknown date')+'?\n\nThis will REPLACE the '+entries.length+' invoice(s) currently in this browser with the '+d.entries.length+' invoice(s) in the backup.')) return;
+      if(d.app!=='krc-billing'||!Array.isArray(d.entries)) throw new Error('bad');
+      if(!confirm('Restore backup from '+(d.exportedAt||'unknown date')+'?\n\nThis REPLACES the '+entries.length+' invoice(s) in this browser with the '+d.entries.length+' in the backup.')) return;
       settings=d.settings; entries=d.entries; counters=d.counters||{};
       persist();
-      document.getElementById('hClinicName').innerHTML=esc(settings.clinicName)+' <span>· X-ray Billing</span>';
-      document.getElementById('hClinicSub').textContent=settings.address+' · '+settings.contact;
-      refreshDropdowns(); refreshInvoicePreview(); buildMonthFilter(); renderTable();
+      applyClinicHeader(); refreshDropdowns(); refreshInvoicePreview(); buildMonthFilter(); renderTable();
       closeSettings(); toast('Backup restored — '+entries.length+' invoice(s) loaded');
     }catch(e){ toast('That file is not a valid KRC billing backup'); }
   };
@@ -502,8 +586,7 @@ function importBackup(file){
   document.getElementById('restoreFile').value='';
 }
 function updateBackupInfo(){
-  const el=document.getElementById('backupInfo');
-  if(!el) return;
+  const el=document.getElementById('backupInfo'); if(!el) return;
   const last=localStorage.getItem('krc_lastBackup');
   el.textContent=last?('Last backup downloaded: '+formatDate(last)):'No backup taken yet from this browser.';
 }
@@ -515,18 +598,16 @@ function openSettings(){
   document.getElementById('sContact').value=settings.contact;
   document.getElementById('sPrefix').value=settings.prefix;
   document.getElementById('sScriptUrl').value=settings.scriptUrl;
-  renderEditLists();
-  updateBackupInfo();
+  document.getElementById('testResult').style.display='none';
+  renderEditLists(); updateBackupInfo();
   document.getElementById('settingsModal').classList.add('open');
 }
 function closeSettings(){ document.getElementById('settingsModal').classList.remove('open'); }
 function renderEditLists(){
   document.getElementById('xrayList').innerHTML=settings.xrays.map((x,i)=>
-    `<div class="li"><span class="nm">${esc(x.name)}</span><span class="pr">₹${x.price}</span>
-     <button class="icon-btn" onclick="removeXray(${i})">✕</button></div>`).join('')||'<div class="li" style="color:var(--muted)">No X-rays yet</div>';
+    `<div class="li"><span class="nm">${esc(x.name)}</span><span class="pr">₹${x.price}</span><button class="icon-btn" onclick="removeXray(${i})">✕</button></div>`).join('')||'<div class="li" style="color:var(--muted)">No X-rays yet</div>';
   document.getElementById('doctorList').innerHTML=settings.doctors.map((d,i)=>
-    `<div class="li"><span class="nm">${esc(d)}</span>
-     <button class="icon-btn" onclick="removeDoctor(${i})">✕</button></div>`).join('')||'<div class="li" style="color:var(--muted)">No doctors yet — "Self / Walk-in" is always available</div>';
+    `<div class="li"><span class="nm">${esc(d)}</span><button class="icon-btn" onclick="removeDoctor(${i})">✕</button></div>`).join('')||'<div class="li" style="color:var(--muted)">No doctors yet — "Self / Walk-in" is always available</div>';
 }
 function addXray(){
   const n=document.getElementById('newXrayName').value.trim();
@@ -538,39 +619,38 @@ function addXray(){
 }
 function removeXray(i){ settings.xrays.splice(i,1); renderEditLists(); }
 function addDoctor(){
-  const n=document.getElementById('newDoctorName').value.trim();
-  if(!n) return;
-  settings.doctors.push(n);
-  document.getElementById('newDoctorName').value='';
-  renderEditLists();
+  const n=document.getElementById('newDoctorName').value.trim(); if(!n) return;
+  settings.doctors.push(n); document.getElementById('newDoctorName').value=''; renderEditLists();
 }
 function removeDoctor(i){ settings.doctors.splice(i,1); renderEditLists(); }
 function saveSettings(){
   settings.clinicName=document.getElementById('sName').value.trim()||settings.clinicName;
   settings.address=document.getElementById('sAddress').value.trim();
   settings.contact=document.getElementById('sContact').value.trim();
-  settings.prefix=document.getElementById('sPrefix').value.trim()||'XR';
+  settings.prefix=document.getElementById('sPrefix').value.trim().replace(/\//g,'')||'XR';
   settings.scriptUrl=document.getElementById('sScriptUrl').value.trim();
   persist();
-  document.getElementById('hClinicName').innerHTML=esc(settings.clinicName)+' <span>· X-ray Billing</span>';
-  document.getElementById('hClinicSub').textContent=settings.address+' · '+settings.contact;
-  refreshDropdowns(); refreshInvoicePreview(); renderTable();
-  closeSettings(); toast('Settings saved');
+  applyClinicHeader(); refreshDropdowns(); refreshInvoicePreview(); renderTable();
+  closeSettings(); toast('Settings saved'); seedFromSheet();
 }
 
 /* ================= UTIL ================= */
 function esc(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function formatDate(d){ const [y,m,dd]=d.split('-'); return dd+'-'+m+'-'+y; }
 function formatMonth(m){ const [y,mm]=m.split('-'); return new Date(y,mm-1,1).toLocaleString('en-IN',{month:'long',year:'numeric'}); }
+function applyClinicHeader(){
+  document.getElementById('hClinicName').innerHTML=esc(settings.clinicName)+' <span>· X-ray Billing</span>';
+  document.getElementById('hClinicSub').textContent=settings.address+' · '+settings.contact;
+}
 let toastTimer;
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2600); }
 
 /* ================= INIT ================= */
 document.getElementById('fDate').value=todayStr();
 document.getElementById('fDate').addEventListener('change',refreshInvoicePreview);
-document.getElementById('hClinicName').innerHTML=esc(settings.clinicName)+' <span>· X-ray Billing</span>';
-document.getElementById('hClinicSub').textContent=settings.address+' · '+settings.contact;
-refreshDropdowns(); refreshInvoicePreview(); buildMonthFilter(); renderTable(); recalc();
+applyClinicHeader();
+refreshDropdowns(); renderLines(); refreshInvoicePreview(); buildMonthFilter(); renderTable(); recalc();
+seedFromSheet();
 </script>
 </body>
 </html>
